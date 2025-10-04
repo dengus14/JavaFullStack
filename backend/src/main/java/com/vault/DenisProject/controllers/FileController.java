@@ -2,6 +2,8 @@ package com.vault.DenisProject.controller;
 
 import com.vault.DenisProject.service.FileService;
 import org.springframework.web.bind.annotation.*;
+import com.vault.DenisProject.models.FileMetadata;
+
 
 import java.util.List;
 
@@ -17,20 +19,20 @@ public class FileController {
     }
 
     @GetMapping
-    public List<String> getFiles(){
+    public List<FileMetadata> getFiles(){
         return fileService.getFiles();
     }
 
     @PostMapping 
-    public String addFile(@RequestParam String file){
-        fileService.addFile(file);
-        return "File " + file + " added successfully";
+    public String addFile(@RequestParam String fileName){
+        fileService.addFile(fileName);
+        return "File " + fileName + " added successfully";
 
     }
 
     @DeleteMapping
-    public String deleteFile(@RequestParam String file){
-        fileService.deleteFile(file);
-        return "File " + file + " deleted successfully";
+    public String deleteFile(@RequestParam String fileName){
+        fileService.deleteFile(fileName);
+        return "File " + fileName + " deleted successfully";
     }
 }

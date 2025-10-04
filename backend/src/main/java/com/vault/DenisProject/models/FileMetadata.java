@@ -1,25 +1,26 @@
+package com.vault.DenisProject.models;
 
 
 
 public class FileMetadata {
 
-    private int id;
+    private long id;
     private String fileName;
     private Long size;
     private String owner;
 
 
-    public FileMetadata(int id, String fileName, Long size, String owner){
+    public FileMetadata(long id, String fileName, Long size, String owner){
         this.id = id;
         this.fileName = fileName;
         this.size = size;
         this.owner = owner;
     }
 
-    public int getId(){
+    public long getId(){
         return this.id;
     }
-    public void setId(int id){
+    public void setId(long id){
         this.id = id;
     }
     public String getFileName(){
