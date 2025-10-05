@@ -1,4 +1,4 @@
-package com.vault.DenisProject.controller;
+package com.vault.DenisProject.controllers;
 
 import com.vault.DenisProject.service.FileService;
 import org.springframework.web.bind.annotation.*;

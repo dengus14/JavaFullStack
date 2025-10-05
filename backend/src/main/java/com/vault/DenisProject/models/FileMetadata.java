@@ -1,9 +1,13 @@
 package com.vault.DenisProject.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
-
+@Entity
 public class FileMetadata {
-
+    @Id
     private long id;
     private String fileName;
     private Long size;
