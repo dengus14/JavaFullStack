@@ -2,13 +2,18 @@ package com.vault.DenisProject.service;
 
 import com.vault.DenisProject.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.vault.DenisProject.models.FileMetadata;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -17,9 +22,13 @@ import java.util.concurrent.atomic.AtomicLong;
 public class FileService {
 
     private final FileRepository fileRepository;
+    private final S3Client s3Client;
+    @Value("${aws.s3.bucket}")
+    private String bucketName;
 
-    public FileService(FileRepository fileRepository) {
+    public FileService(FileRepository fileRepository,  S3Client s3Client) {
         this.fileRepository = fileRepository;
+        this.s3Client = s3Client;
     }
 
 
@@ -62,14 +71,30 @@ public class FileService {
     }
 
     public void saveFile(MultipartFile file, String owner) throws IOException {
-        String fileName = file.getOriginalFilename();
-        Long size = file.getSize();
 
-        FileMetadata ret = new FileMetadata();
-        ret.setFileName(fileName);
-        ret.setSize(size);
-        ret.setOwner(owner);
+        String key = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
 
-        fileRepository.save(ret);
+
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .contentType(file.getContentType())
+                        .build(),
+                RequestBody.fromBytes(file.getBytes())
+        );
+
+
+        String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, key);
+
+
+        FileMetadata metadata = new FileMetadata();
+        metadata.setFileName(file.getOriginalFilename());
+        metadata.setOwner(owner);
+        metadata.setSize(file.getSize());
+        metadata.setS3Url(fileUrl);
+
+        fileRepository.save(metadata);
     }
+
 }
