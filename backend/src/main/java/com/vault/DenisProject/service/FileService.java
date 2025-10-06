@@ -36,6 +36,12 @@ public class FileService {
     }
 
     public void deleteFile(long id) {
-        fileRepository.deleteById(id);
+        if(fileRepository.existsById(id)){
+            fileRepository.deleteById(id);
+        }
+        else{
+           System.out.println("File with id " + id + " does not exist");
+        }
+
     }
 }

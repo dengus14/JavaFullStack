@@ -32,8 +32,8 @@ public class FileController {
 
     }
 
-    @DeleteMapping
-    public String deleteFile(@RequestBody long id){
+    @DeleteMapping("/{id}")
+    public String deleteFile(@PathVariable long id){
         fileService.deleteFile(id);
         return "File " + id + " deleted successfully";
     }
