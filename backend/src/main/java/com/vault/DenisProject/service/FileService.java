@@ -4,6 +4,9 @@ import com.vault.DenisProject.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.vault.DenisProject.models.FileMetadata;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,6 +45,31 @@ public class FileService {
         else{
            System.out.println("File with id " + id + " does not exist");
         }
+    }
+    public void updateFile(long id, String fileName, Long size) {
+        FileMetadata file = fileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("File with ID " + id + " not found"));
 
+        if (fileName != null && !fileName.isBlank()) {
+            file.setFileName(fileName);
+        }
+
+        if (size != null) {
+            file.setSize(size);
+        }
+
+        fileRepository.save(file);
+    }
+
+    public void saveFile(MultipartFile file, String owner) throws IOException {
+        String fileName = file.getOriginalFilename();
+        Long size = file.getSize();
+
+        FileMetadata ret = new FileMetadata();
+        ret.setFileName(fileName);
+        ret.setSize(size);
+        ret.setOwner(owner);
+
+        fileRepository.save(ret);
     }
 }
