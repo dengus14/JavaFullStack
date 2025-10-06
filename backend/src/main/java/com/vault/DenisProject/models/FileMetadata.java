@@ -1,25 +1,29 @@
 package com.vault.DenisProject.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "files")
 public class FileMetadata {
     @Id
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String fileName;
     private Long size;
     private String owner;
 
+    public FileMetadata() {
 
-    public FileMetadata(long id, String fileName, Long size, String owner){
+    }
+
+    public FileMetadata(Long id, String fileName, Long size, String owner){
         this.id = id;
         this.fileName = fileName;
         this.size = size;
         this.owner = owner;
     }
+
+
 
     public long getId(){
         return this.id;

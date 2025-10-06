@@ -1,5 +1,7 @@
 package com.vault.DenisProject.service;
 
+import com.vault.DenisProject.repository.FileRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.vault.DenisProject.models.FileMetadata;
 import java.util.ArrayList;
@@ -10,24 +12,30 @@ import java.util.concurrent.atomic.AtomicLong;
 //Creates a model for FileService
 @Service
 public class FileService {
-    private List<FileMetadata> files = new ArrayList<>();
-    private final AtomicLong longVal = new AtomicLong(0);
+
+    private final FileRepository fileRepository;
+
+    public FileService(FileRepository fileRepository) {
+        this.fileRepository = fileRepository;
+    }
+
 
     public List<FileMetadata> getFiles() {
-        return files;
+
+        return fileRepository.findAll();
     }
 
     public void addFile(String fileName) {
         FileMetadata ret = new FileMetadata(
-            longVal.incrementAndGet(),
+            null,
             fileName,
             0L,
             "Denis Gusev"
         );
-        files.add(ret);
+        fileRepository.save(ret);
     }
 
-    public void deleteFile(String fileName) {
-        files.removeIf(file -> file.getFileName().equals(fileName));
+    public void deleteFile(long id) {
+        fileRepository.deleteById(id);
     }
 }

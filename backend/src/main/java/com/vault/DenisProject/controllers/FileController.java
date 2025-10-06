@@ -15,11 +15,13 @@ public class FileController {
     private final FileService fileService;
 
     public FileController(FileService fileService) {
+
         this.fileService = fileService;
     }
 
     @GetMapping
     public List<FileMetadata> getFiles(){
+
         return fileService.getFiles();
     }
 
@@ -31,8 +33,8 @@ public class FileController {
     }
 
     @DeleteMapping
-    public String deleteFile(@RequestParam String fileName){
-        fileService.deleteFile(fileName);
-        return "File " + fileName + " deleted successfully";
+    public String deleteFile(@RequestParam long id){
+        fileService.deleteFile(id);
+        return "File " + id + " deleted successfully";
     }
 }
