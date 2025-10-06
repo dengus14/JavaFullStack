@@ -1,0 +1,21 @@
+# Maven / Gradle
+target/
+*.class
+*.jar
+*.war
+
+# IntelliJ
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Environment files
+application.properties
+application.yml
+.env
