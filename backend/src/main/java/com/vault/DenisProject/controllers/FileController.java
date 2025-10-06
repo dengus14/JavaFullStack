@@ -26,14 +26,14 @@ public class FileController {
     }
 
     @PostMapping 
-    public String addFile(@RequestParam String fileName){
+    public String addFile(@RequestBody String fileName){
         fileService.addFile(fileName);
         return "File " + fileName + " added successfully";
 
     }
 
     @DeleteMapping
-    public String deleteFile(@RequestParam long id){
+    public String deleteFile(@RequestBody long id){
         fileService.deleteFile(id);
         return "File " + id + " deleted successfully";
     }
