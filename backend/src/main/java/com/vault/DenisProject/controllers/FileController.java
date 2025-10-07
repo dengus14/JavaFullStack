@@ -2,7 +2,7 @@ package com.vault.DenisProject.controllers;
 
 import com.vault.DenisProject.dto.FileUpdateRequest;
 import com.vault.DenisProject.service.FileService;
-import jakarta.annotation.Resource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -60,14 +60,10 @@ public class FileController {
 
     }
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
-        InputStream stream = fileService.downloadFile(id);
-        InputStreamResource resource = new InputStreamResource(stream);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=fileName")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body((Resource) resource);
+    public ResponseEntity<String> getDownloadUrl(@PathVariable Long id) {
+        String presignedUrl = fileService.generateDownloadUrl(id);
+        return ResponseEntity.ok(presignedUrl);
     }
+
 
 }

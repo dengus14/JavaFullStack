@@ -13,6 +13,12 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import java.time.Duration;
+
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,14 +33,16 @@ import java.util.concurrent.atomic.AtomicLong;
 public class FileService {
 
     private final FileRepository fileRepository;
+    private final S3Presigner presigner;
 
     private final S3Client s3Client;
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    public FileService(FileRepository fileRepository,  S3Client s3Client) {
+    public FileService(FileRepository fileRepository,  S3Client s3Client, S3Presigner presigner) {
         this.fileRepository = fileRepository;
         this.s3Client = s3Client;
+        this.presigner = presigner;
     }
 
 
@@ -51,6 +59,13 @@ public class FileService {
             "Denis Gusev"
         );
         fileRepository.save(ret);
+    }
+
+    public FileMetadata getFileMetadata(Long id) {
+        if(fileRepository.findById(id).isPresent()) {
+            return fileRepository.findById(id).get();
+        }
+        return null;
     }
 
     public void deleteFile(long id) {
@@ -77,9 +92,7 @@ public class FileService {
     }
 
     public void saveFile(MultipartFile file, String owner) throws IOException {
-
-        String key = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-
+        String key = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
         s3Client.putObject(
                 PutObjectRequest.builder()
@@ -90,24 +103,25 @@ public class FileService {
                 RequestBody.fromBytes(file.getBytes())
         );
 
+        String fileUrl = "https://" + bucketName + ".s3.amazonaws.com/" + key;
 
-        String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, key);
+        FileMetadata meta = new FileMetadata();
+        meta.setFileName(key);
+        meta.setOriginalName(file.getOriginalFilename());
+        meta.setOwner(owner);
+        meta.setSize(file.getSize());
+        meta.setContentType(file.getContentType());
+        meta.setS3Url(fileUrl);
 
-
-        FileMetadata metadata = new FileMetadata();
-        metadata.setFileName(file.getOriginalFilename());
-        metadata.setOwner(owner);
-        metadata.setSize(file.getSize());
-        metadata.setS3Url(fileUrl);
-
-        fileRepository.save(metadata);
+        fileRepository.save(meta);
     }
+
 
     public InputStream downloadFile(Long id) {
 
         FileMetadata ret =  fileRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("File with ID " + id + " not found"));
 
-        GetObjectRequest newRequest = GetObjectRequest.builder().bucket(bucketName).key(ret.getS3Url()).build();
+        GetObjectRequest newRequest = GetObjectRequest.builder().bucket(bucketName).key(ret.getFileName()).build();
 
         try {
             return s3Client.getObject(newRequest);
@@ -115,5 +129,28 @@ public class FileService {
             throw new RuntimeException("Error downloading file from S3: " + e.awsErrorDetails().errorMessage(), e);
         }
     }
+
+    public String generateDownloadUrl(Long id) {
+        FileMetadata meta = fileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("File not found"));
+
+        String safeFileName = meta.getOriginalName()
+                .replaceAll("[^a-zA-Z0-9._-]", "_"); // removes special characters safely
+
+        GetObjectRequest getReq = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(meta.getFileName())
+                .responseContentDisposition("attachment; filename=\"" + safeFileName + "\"")
+                .responseContentType(meta.getContentType())
+                .build();
+
+        GetObjectPresignRequest presignReq = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(5))
+                .getObjectRequest(getReq)
+                .build();
+
+        return presigner.presignGetObject(presignReq).url().toString();
+    }
+
 
 }

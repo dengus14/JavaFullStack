@@ -10,9 +10,11 @@ public class FileMetadata {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String fileName;
-    private Long size;
-    private String owner;
+    private String fileName;      // S3 key
+    private String originalName;  // human-readable
+    private Long size;            // size of the file
+    private String owner;         //owner of the file
+    private String contentType;   //which type of file this is
 
     @Column(name = "s3_url")
     private String s3Url;
@@ -28,10 +30,29 @@ public class FileMetadata {
         this.owner = owner;
     }
 
+
+
     // Getters & Setters
     public Long getId() {
         return id;
     }
+
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
 
     public void setId(Long id) {
         this.id = id;
