@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 import "./Register.css";
 
@@ -7,6 +7,7 @@ export default function Register() {
   const [form, setForm] = useState({ username: "", password: "", confirmPassword: "" });
   const [msg, setMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -20,10 +21,32 @@ export default function Register() {
 
     setIsLoading(true);
     try {
+      
       await api.post("/register", { username: form.username, password: form.password });
-      setMsg("success|✅ Registration successful! You can now log in.");
+      
+      
+      const loginRes = await api.post("/login", { 
+        username: form.username, 
+        password: form.password 
+      });
+      
+     // Replace the localStorage.setItem and setTimeout with:
+      localStorage.setItem("token", loginRes.data);
+      setMsg("success|✅ Registration successful! Redirecting to dashboard...");
+
+      // Dispatch custom event to trigger App.js re-render
+      window.dispatchEvent(new Event('authChange'));
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 500);
+      
     } catch (err) {
-      setMsg("error|❌ Registration failed. Username might already exist.");
+      if (err.response?.status === 409) {
+        setMsg("error|❌ Username already exists. Please choose another.");
+      } else {
+        setMsg("error|❌ Registration failed. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -48,6 +71,7 @@ export default function Register() {
               name="username" 
               placeholder="Choose a username" 
               onChange={handleChange}
+              value={form.username}
               required
             />
           </div>
@@ -60,6 +84,7 @@ export default function Register() {
               type="password" 
               placeholder="Create a secure password" 
               onChange={handleChange}
+              value={form.password}
               required
             />
           </div>
@@ -72,6 +97,7 @@ export default function Register() {
               type="password" 
               placeholder="Confirm your password" 
               onChange={handleChange}
+              value={form.confirmPassword}
               required
             />
           </div>

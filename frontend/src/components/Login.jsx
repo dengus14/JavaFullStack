@@ -16,10 +16,13 @@ export default function Login() {
     setIsLoading(true);
     try {
       const res = await api.post("/login", form);
+      // In handleSubmit success block:
       localStorage.setItem("token", res.data);
       setMsg("success|✅ Logged in successfully!");
-      
-      // Redirect to dashboard after successful login
+
+      // Dispatch custom event
+      window.dispatchEvent(new Event('authChange'));
+
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
